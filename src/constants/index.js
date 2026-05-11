@@ -120,5 +120,5 @@ export const PROJECT_DESCRIPTIONS = {
   "fake-news-detector": "Developed a machine learning model to classify news articles as real or fake using Natural Language Processing. Applied TF-IDF vectorization and trained a Passive Aggressive Classifier on a labeled news dataset.",
   "darsanam-tkts": "Full-stack temple ticket booking web app for Darshanam. Features user authentication, seat selection, booking management, and payment flow. Built with React, Node.js, Express, and MongoDB.",
   "bvr-transport": "Transport management web application for BVR Transport. Includes route management, vehicle tracking, and booking features. Built with React frontend and Node.js backend deployed on Vercel.",
-  "aura-fit": "A comprehensive fitness application designed to track workouts, monitor health metrics, and guide users toward their fitness goals. Features a dynamic UI and personalized tracking capabilities.",
+  "aura_fit_app": "A comprehensive fitness application designed to track workouts, monitor health metrics, and guide users toward their fitness goals. Features a dynamic UI and personalized tracking capabilities.",
 };

@@ -9,7 +9,7 @@ npm run build
 # cd into the build output directory
 cd dist
 
-# if you are deploying to a custom domain
+# Custom domain: use public/CNAME (copied into dist by Vite). For manual dist-only deploys:
 # echo 'durgaprasad.me' > CNAME
 
 git init

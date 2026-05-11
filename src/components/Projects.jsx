@@ -6,11 +6,32 @@ import { GlowCard } from './ui/spotlight-card';
 import { ParticleTextEffect } from './ui/particle-text';
 import { useTheme } from '../context/ThemeContext';
 
+// Portfolio site repo — show in nav/site only, not as a featured project card
+const EXCLUDED_GITHUB_REPOS = new Set(['durgaprasad.me', 'durgaprasad-me', 'durgaprasad_me']);
+
+/** Repo(s) for the Aura Fit app — pinned to the end of the project grid only. */
+const isAuraFitRepoName = (name) => {
+  const n = String(name).toLowerCase();
+  const slug = n.replace(/_/g, '-');
+  return n === 'aura_fit_app' || slug === 'aura-fit-app' || slug === 'aura-fit' || slug === 'aurafit';
+};
+
+const isAuraFitCard = (p) =>
+  isAuraFitRepoName(p.title) || /aura_fit_app|aura-fit-app/i.test(p.github || '');
+
 // Match repo name to a custom description key
 const getCustomDescription = (repoName) => {
   const name = repoName.toLowerCase();
   const match = Object.keys(PROJECT_DESCRIPTIONS).find(key => name.includes(key));
   return match ? PROJECT_DESCRIPTIONS[match] : null;
+};
+
+/** Non–Aura Fit projects first; Aura Fit last (single card). */
+const withAuraFitLast = (items) => {
+  const aura = items.filter(isAuraFitCard);
+  const rest = items.filter((p) => !isAuraFitCard(p));
+  const merged = [...rest, ...aura];
+  return merged.filter((p, i) => merged.findIndex((q) => q.title === p.title && q.github === p.github) === i);
 };
 
 const Projects = () => {
@@ -26,10 +47,16 @@ const Projects = () => {
         if (!response.ok) throw new Error('Failed to fetch repos');
         const data = await response.json();
         
-        // Filter out forks and any repo with "code_alpha" in the name
+        // Filter out forks, portfolio repo, and any repo with "code_alpha" in the name
         const filteredRepos = data
-          .filter(repo => !repo.fork && !repo.name.toLowerCase().includes("code_alpha") && !repo.name.toLowerCase().includes("codealpha"))
-          .map(repo => {
+          .filter(
+            (repo) =>
+              !repo.fork &&
+              !repo.name.toLowerCase().includes('code_alpha') &&
+              !repo.name.toLowerCase().includes('codealpha') &&
+              !EXCLUDED_GITHUB_REPOS.has(repo.name.toLowerCase())
+          )
+          .map((repo) => {
             let liveLink = repo.homepage || repo.html_url;
             // Override live link for darshanam tickets booking
             if (repo.name.toLowerCase().includes("darshanam") || repo.name.toLowerCase().includes("darsanam")) {
@@ -51,42 +78,55 @@ const Projects = () => {
             
             return {
               title: repo.name,
-              description: getCustomDescription(repo.name) || repo.description || 'No description provided for this repository.',
+              description:
+                getCustomDescription(repo.name) ||
+                repo.description ||
+                'No description provided for this repository.',
               tags: [repo.language].filter(Boolean),
               github: repo.html_url,
-              link: liveLink
+              link: liveLink,
             };
           });
-        if (filteredRepos.length > 0) {
-          setProjects(filteredRepos);
+        const ordered = withAuraFitLast(filteredRepos);
+        if (ordered.length > 0) {
+          setProjects(ordered);
         } else {
           throw new Error('No public repos found');
         }
       } catch (error) {
         console.error("Error fetching GitHub projects:", error);
         // Fallback to manual projects from constants if GitHub is disconnected or rate limited
-        const manualProjects = Object.keys(PROJECT_DESCRIPTIONS).map(key => {
-          let liveLink = "#";
-          const lowerName = key.toLowerCase();
-          
-          if (lowerName.includes("darshanam") || lowerName.includes("darsanam")) {
-            liveLink = "https://darsanam-tkts.vercel.app/login";
-          } else if (lowerName.includes("fake") && lowerName.includes("news")) {
-            liveLink = "https://fake-news-detector-six-ashen.vercel.app/";
-          } else if (lowerName.includes("bvr")) {
-            liveLink = "https://bvr-transport.vercel.app/";
-          } else if (lowerName.includes("crop") && lowerName.includes("companion")) {
-            liveLink = "https://crop-companion-iota.vercel.app/signin";
-          }
+        const keys = Object.keys(PROJECT_DESCRIPTIONS);
+        const orderedKeys = [...keys.filter((k) => k !== 'aura_fit_app'), ...keys.filter((k) => k === 'aura_fit_app')];
+        const manualProjects = withAuraFitLast(
+          orderedKeys.map((key) => {
+            let liveLink = '#';
+            const lowerName = key.toLowerCase();
 
-          return {
-            title: key.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-            description: PROJECT_DESCRIPTIONS[key],
-            tags: ["React", "JavaScript", "Python"], // Default tags for fallback
-            github: `https://github.com/${GITHUB_USERNAME}/${key}`,
-            link: liveLink
-          };
-        });
+            if (lowerName.includes('darshanam') || lowerName.includes('darsanam')) {
+              liveLink = 'https://darsanam-tkts.vercel.app/login';
+            } else if (lowerName.includes('fake') && lowerName.includes('news')) {
+              liveLink = 'https://fake-news-detector-six-ashen.vercel.app/';
+            } else if (lowerName.includes('bvr')) {
+              liveLink = 'https://bvr-transport.vercel.app/';
+            } else if (lowerName.includes('crop') && lowerName.includes('companion')) {
+              liveLink = 'https://crop-companion-iota.vercel.app/signin';
+            }
+
+            const title = key
+              .split(/[-_]/)
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+              .join(' ');
+
+            return {
+              title,
+              description: PROJECT_DESCRIPTIONS[key],
+              tags: ['React', 'JavaScript', 'Python'],
+              github: `https://github.com/${GITHUB_USERNAME}/${key}`,
+              link: liveLink,
+            };
+          })
+        );
         setProjects(manualProjects);
       } finally {
         setLoading(false);

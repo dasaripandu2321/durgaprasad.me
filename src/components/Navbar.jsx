@@ -8,7 +8,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState('home');
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const isDark = theme === 'dark';
 
   useEffect(() => {
@@ -40,20 +40,13 @@ const Navbar = () => {
           : 'backdrop-blur-md theme-bg-surface theme-border-primary rounded-2xl'
       }`}>
         <div className="flex items-center justify-between px-5 py-3">
-          {/* Logo */}
+          {/* Brand */}
           <a href="#home" className="relative group flex items-center">
             <span
+              className="font-black tracking-tight leading-none text-2xl sm:text-3xl md:text-[1.9rem] text-white"
               style={{
                 fontFamily: "'Nunito', sans-serif",
-                fontWeight: 900,
-                fontSize: '1.9rem',
-                letterSpacing: '-0.02em',
-                lineHeight: 1,
-                background: 'linear-gradient(135deg, #ffffff 0%, #e0d7ff 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                filter: 'drop-shadow(0 0 8px rgba(167,139,250,0.5))',
+                ...(!isDark ? { WebkitTextStroke: '1px rgba(26, 16, 64, 0.28)' } : {}),
               }}
             >
               DP
