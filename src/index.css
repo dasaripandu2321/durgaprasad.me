@@ -95,6 +95,13 @@
     will-change: transform, backdrop-filter;
   }
 
+  /* Disable backdrop-filter on mobile for performance */
+  @media (max-width: 768px) {
+    .glass-panel, .glass-strong, .holo-card, .holographic-card {
+      backdrop-filter: none !important;
+    }
+  }
+
   /* ── Theme-aware backgrounds ── */
   .theme-bg-surface {
     background: var(--theme-surface);

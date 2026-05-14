@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 
 export function WebGLShader() {
@@ -14,8 +14,17 @@ export function WebGLShader() {
     animationId: null,
     startTime: performance.now(),
   })
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
+    if (isMobile) return () => window.removeEventListener('resize', checkMobile)
+
     if (!canvasRef.current) return
 
     const canvas = canvasRef.current
@@ -61,8 +70,7 @@ export function WebGLShader() {
         powerPreference: 'high-performance',
         alpha: false 
       })
-      // Lower pixel ratio for performance on high-DPI screens
-      refs.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.0))
+      refs.renderer.setPixelRatio(1.0)
       refs.renderer.setClearColor(0x000000, 1)
 
       refs.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, -1)
@@ -109,12 +117,11 @@ export function WebGLShader() {
 
     initScene()
     refs.animationId = requestAnimationFrame(animate)
-    window.addEventListener('resize', handleResize)
     document.addEventListener('visibilitychange', onVisibilityChange)
 
     return () => {
       if (refs.animationId) cancelAnimationFrame(refs.animationId)
-      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('resize', checkMobile)
       document.removeEventListener('visibilitychange', onVisibilityChange)
       if (refs.mesh) {
         refs.mesh.geometry.dispose()
@@ -122,7 +129,13 @@ export function WebGLShader() {
       }
       refs.renderer?.dispose()
     }
-  }, [])
+  }, [isMobile])
+
+  if (isMobile) {
+    return (
+      <div className="fixed inset-0 bg-[#020208] -z-10" />
+    )
+  }
 
   return (
     <canvas

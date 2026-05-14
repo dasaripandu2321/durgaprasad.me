@@ -1,10 +1,19 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 const CyberneticGridShader = () => {
   const containerRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    if (isMobile) return () => window.removeEventListener('resize', checkMobile);
+
     const container = containerRef.current;
     if (!container) return;
 
@@ -124,7 +133,9 @@ const CyberneticGridShader = () => {
       geometry.dispose();
       renderer.dispose();
     };
-  }, []);
+  }, [isMobile]);
+
+  if (isMobile) return null;
 
   return (
     <div
