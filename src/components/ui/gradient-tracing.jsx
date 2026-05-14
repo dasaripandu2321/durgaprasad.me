@@ -10,6 +10,15 @@ export const GradientTracing = ({
   strokeWidth = 2,
   path,
 }) => {
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const w = Number(width) || 1440;
   const h = Number(height) || 2;
   const defaultPath = `M0,${h / 2} L${w},${h / 2}`;
@@ -46,23 +55,27 @@ export const GradientTracing = ({
             gradientUnits="userSpaceOnUse"
             x1="0"
             y1="0"
-            x2="0"
+            x2={isMobile ? w : 0}
             y2="0"
           >
-            <animate
-              attributeName="x1"
-              from="0"
-              to={w * 2}
-              dur={dur}
-              repeatCount="indefinite"
-            />
-            <animate
-              attributeName="x2"
-              from="0"
-              to={w}
-              dur={dur}
-              repeatCount="indefinite"
-            />
+            {!isMobile && (
+              <>
+                <animate
+                  attributeName="x1"
+                  from="0"
+                  to={w * 2}
+                  dur={dur}
+                  repeatCount="indefinite"
+                />
+                <animate
+                  attributeName="x2"
+                  from="0"
+                  to={w}
+                  dur={dur}
+                  repeatCount="indefinite"
+                />
+              </>
+            )}
             <stop stopColor={gradientColors[0]} stopOpacity="0" />
             <stop stopColor={gradientColors[1]} />
             <stop offset="1" stopColor={gradientColors[2]} stopOpacity="0" />

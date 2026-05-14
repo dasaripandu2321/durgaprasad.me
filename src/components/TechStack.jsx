@@ -15,12 +15,23 @@ const icons = {
 
 const Card3D = ({ children, className = '' }) => {
   const ref = useRef(null);
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [10, -10]), { stiffness: 300, damping: 30 });
   const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-10, 10]), { stiffness: 300, damping: 30 });
   const glowX = useTransform(x, [-0.5, 0.5], ['0%', '100%']);
   const glowY = useTransform(y, [-0.5, 0.5], ['0%', '100%']);
+
+  if (isMobile) return <div className={className}>{children}</div>;
 
   return (
     <motion.div

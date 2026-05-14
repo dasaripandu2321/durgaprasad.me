@@ -15,9 +15,17 @@ const Background = () => (
 /* ── Holographic intro card ── */
 const HolographicCard = ({ children }) => {
   const cardRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleMouseMove = (e) => {
-    if (!cardRef.current) return;
+    if (isMobile || !cardRef.current) return;
     const card = cardRef.current;
     const rect = card.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -34,7 +42,7 @@ const HolographicCard = ({ children }) => {
   };
 
   const handleMouseLeave = () => {
-    if (!cardRef.current) return;
+    if (isMobile || !cardRef.current) return;
     const card = cardRef.current;
     card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)';
     card.style.setProperty('--x', '50%');
@@ -50,8 +58,8 @@ const HolographicCard = ({ children }) => {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="holo-scanline" />
-      <div className="holo-glow" />
+      {!isMobile && <div className="holo-scanline" />}
+      {!isMobile && <div className="holo-glow" />}
       <div className="holo-content">{children}</div>
     </div>
   );
