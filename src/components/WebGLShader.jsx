@@ -12,6 +12,7 @@ export function WebGLShader() {
     mesh: null,
     uniforms: null,
     animationId: null,
+    startTime: performance.now(),
   })
 
   useEffect(() => {
@@ -37,9 +38,7 @@ export function WebGLShader() {
 
       void main() {
         vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
-        
         float d = length(p) * distortion;
-        
         float rx = p.x * (1.0 + d);
         float gx = p.x;
         float bx = p.x * (1.0 - d);
@@ -52,51 +51,45 @@ export function WebGLShader() {
       }
     `
 
+    let isVisible = true
+
     const initScene = () => {
       refs.scene = new THREE.Scene()
-      refs.renderer = new THREE.WebGLRenderer({ canvas })
-      refs.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25))
-      refs.renderer.setClearColor(new THREE.Color(0x000000))
+      refs.renderer = new THREE.WebGLRenderer({ 
+        canvas, 
+        antialias: false, 
+        powerPreference: 'high-performance',
+        alpha: false 
+      })
+      // Lower pixel ratio for performance on high-DPI screens
+      refs.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.0))
+      refs.renderer.setClearColor(0x000000, 1)
 
       refs.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, -1)
 
       refs.uniforms = {
-        resolution: { value: [window.innerWidth, window.innerHeight] },
+        resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
         time: { value: 0.0 },
         xScale: { value: 1.0 },
         yScale: { value: 0.5 },
         distortion: { value: 0.05 },
       }
 
-      const position = [
-        -1.0, -1.0, 0.0,
-         1.0, -1.0, 0.0,
-        -1.0,  1.0, 0.0,
-         1.0, -1.0, 0.0,
-        -1.0,  1.0, 0.0,
-         1.0,  1.0, 0.0,
-      ]
-
-      const positions = new THREE.BufferAttribute(new Float32Array(position), 3)
-      const geometry = new THREE.BufferGeometry()
-      geometry.setAttribute('position', positions)
-
+      const geometry = new THREE.PlaneGeometry(2, 2)
       const material = new THREE.RawShaderMaterial({
         vertexShader,
         fragmentShader,
         uniforms: refs.uniforms,
-        side: THREE.DoubleSide,
       })
 
       refs.mesh = new THREE.Mesh(geometry, material)
       refs.scene.add(refs.mesh)
-
       handleResize()
     }
 
-    const animate = () => {
-      if (refs.uniforms) refs.uniforms.time.value += 0.01
-      if (refs.renderer && refs.scene && refs.camera) {
+    const animate = (now) => {
+      if (isVisible && refs.uniforms && refs.renderer) {
+        refs.uniforms.time.value = (now - refs.startTime) * 0.001
         refs.renderer.render(refs.scene, refs.camera)
       }
       refs.animationId = requestAnimationFrame(animate)
@@ -107,22 +100,25 @@ export function WebGLShader() {
       const width = window.innerWidth
       const height = window.innerHeight
       refs.renderer.setSize(width, height, false)
-      refs.uniforms.resolution.value = [width, height]
+      refs.uniforms.resolution.value.set(width, height)
+    }
+
+    const onVisibilityChange = () => {
+      isVisible = !document.hidden
     }
 
     initScene()
-    animate()
+    refs.animationId = requestAnimationFrame(animate)
     window.addEventListener('resize', handleResize)
+    document.addEventListener('visibilitychange', onVisibilityChange)
 
     return () => {
       if (refs.animationId) cancelAnimationFrame(refs.animationId)
       window.removeEventListener('resize', handleResize)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
       if (refs.mesh) {
-        refs.scene?.remove(refs.mesh)
         refs.mesh.geometry.dispose()
-        if (refs.mesh.material instanceof THREE.Material) {
-          refs.mesh.material.dispose()
-        }
+        refs.mesh.material.dispose()
       }
       refs.renderer?.dispose()
     }
@@ -132,6 +128,7 @@ export function WebGLShader() {
     <canvas
       ref={canvasRef}
       className="fixed top-0 left-0 w-full h-full block"
+      style={{ background: '#000' }}
     />
   )
 }

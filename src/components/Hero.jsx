@@ -4,7 +4,6 @@ import { HERO_CONTENT, RESUME_URL } from '../constants';
 import { ChevronDown, Download, Github, Linkedin, Mail } from 'lucide-react';
 import { LiquidButton } from './ui/liquid-glass-button';
 import { useTheme } from '../context/ThemeContext';
-import { WebGLShader } from './ui/webgl-shader';
 import { SectionDivider } from './ui/gradient-tracing';
 
 /* ── Background orbs + grid ── */
@@ -94,11 +93,6 @@ const Hero = () => {
       id="home"
       className="relative min-h-screen flex flex-col justify-center items-center overflow-hidden pt-20"
     >
-      {/* WebGL chromatic aberration shader — bottom layer */}
-      <div className="absolute inset-0 z-0" style={{ opacity: isDark ? 0.6 : 0.25 }}>
-        <WebGLShader />
-      </div>
-
       {/* Overlay so content stays readable */}
       <div className="absolute inset-0 z-[1] pointer-events-none"
         style={{ background: isDark

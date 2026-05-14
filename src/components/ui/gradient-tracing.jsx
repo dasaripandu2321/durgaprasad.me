@@ -2,25 +2,29 @@ import React from "react";
 import { motion } from "framer-motion";
 
 export const GradientTracing = ({
-  width,
-  height,
+  width = 1440,
+  height = 2,
   baseColor = "rgba(139,92,246,0.2)",
   gradientColors = ["#2EB9DF", "#a78bfa", "#9E00FF"],
   animationDuration = 2,
   strokeWidth = 2,
   path,
 }) => {
-  const defaultPath = `M0,${height / 2} L${width},${height / 2}`;
+  const w = Number(width) || 1440;
+  const h = Number(height) || 2;
+  const defaultPath = `M0,${h / 2} L${w},${h / 2}`;
   const d = path || defaultPath;
   const gradientId = `pulse-${Math.random().toString(36).substr(2, 9)}`;
+  const dur = `${animationDuration}s`;
 
   return (
-    <div className="relative" style={{ width, height }}>
+    <div className="relative" style={{ width: w, height: h }}>
       <svg
-        width={width}
-        height={height}
-        viewBox={`0 0 ${width} ${height}`}
+        width={w}
+        height={h}
+        viewBox={`0 0 ${w} ${h}`}
         fill="none"
+        xmlns="http://www.w3.org/2000/svg"
       >
         {/* Base faint line */}
         <path
@@ -37,23 +41,32 @@ export const GradientTracing = ({
           strokeWidth={strokeWidth}
         />
         <defs>
-          <motion.linearGradient
-            animate={{
-              x1: [0, width * 2],
-              x2: [0, width],
-            }}
-            transition={{
-              duration: animationDuration,
-              repeat: Infinity,
-              ease: "linear",
-            }}
+          <linearGradient
             id={gradientId}
             gradientUnits="userSpaceOnUse"
+            x1="0"
+            y1="0"
+            x2="0"
+            y2="0"
           >
+            <animate
+              attributeName="x1"
+              from="0"
+              to={w * 2}
+              dur={dur}
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="x2"
+              from="0"
+              to={w}
+              dur={dur}
+              repeatCount="indefinite"
+            />
             <stop stopColor={gradientColors[0]} stopOpacity="0" />
             <stop stopColor={gradientColors[1]} />
             <stop offset="1" stopColor={gradientColors[2]} stopOpacity="0" />
-          </motion.linearGradient>
+          </linearGradient>
         </defs>
       </svg>
     </div>

@@ -203,6 +203,12 @@ export function ParticleTextEffect({ words = ["HELLO"], height = 120, fontSize =
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    let isVisible = false;
+    const observer = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting;
+    }, { threshold: 0.1 });
+    observer.observe(canvas);
+
     const resize = () => {
       canvas.width = canvas.offsetWidth || 800;
       canvas.height = height;
@@ -211,24 +217,25 @@ export function ParticleTextEffect({ words = ["HELLO"], height = 120, fontSize =
     resize();
 
     const animate = () => {
-      const ctx = canvas.getContext("2d");
-      // Keep the particle canvas transparent so it blends with the dark section background
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (isVisible) {
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      const particles = particlesRef.current;
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.move();
-        p.draw(ctx, drawAsPoints);
-        if (p.isKilled && (p.pos.x < -50 || p.pos.x > canvas.width + 50 || p.pos.y < -50 || p.pos.y > canvas.height + 50)) {
-          particles.splice(i, 1);
+        const particles = particlesRef.current;
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.move();
+          p.draw(ctx, drawAsPoints);
+          if (p.isKilled && (p.pos.x < -50 || p.pos.x > canvas.width + 50 || p.pos.y < -50 || p.pos.y > canvas.height + 50)) {
+            particles.splice(i, 1);
+          }
         }
-      }
 
-      frameRef.current++;
-      if (frameRef.current % 220 === 0) {
-        wordIdxRef.current = (wordIdxRef.current + 1) % words.length;
-        loadWord(words[wordIdxRef.current], canvas);
+        frameRef.current++;
+        if (frameRef.current % 220 === 0) {
+          wordIdxRef.current = (wordIdxRef.current + 1) % words.length;
+          loadWord(words[wordIdxRef.current], canvas);
+        }
       }
       animRef.current = requestAnimationFrame(animate);
     };
@@ -238,6 +245,7 @@ export function ParticleTextEffect({ words = ["HELLO"], height = 120, fontSize =
     return () => {
       cancelAnimationFrame(animRef.current);
       window.removeEventListener("resize", resize);
+      observer.disconnect();
     };
   }, [words, height, fontSize]);
 

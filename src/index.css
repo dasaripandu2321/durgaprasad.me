@@ -78,18 +78,21 @@
 
   /* ── Glass ── */
   .glass-panel {
-    @apply backdrop-blur-xl border rounded-2xl;
+    @apply border rounded-2xl;
+    backdrop-filter: blur(8px);
     background: var(--theme-glass-bg);
     border-color: var(--theme-glass-border);
     box-shadow: 0 8px 32px var(--theme-shadow), inset 0 1px 0 rgba(255,255,255,0.05);
     transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    will-change: transform, backdrop-filter;
   }
   .glass-strong {
-    backdrop-filter: blur(24px);
+    backdrop-filter: blur(12px);
     background: var(--theme-glass-bg);
     border: 1px solid var(--theme-glass-border);
     box-shadow: 0 20px 60px var(--theme-shadow), inset 0 1px 0 rgba(255,255,255,0.08);
     transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    will-change: transform, backdrop-filter;
   }
 
   /* ── Theme-aware backgrounds ── */
@@ -205,9 +208,10 @@
 /* ── Holo card ── */
 .holo-card {
   background: rgba(10, 12, 18, 0.75);
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(8px);
   border: 1px solid rgba(255,255,255,0.08);
   transition: all 0.35s cubic-bezier(0.23,1,0.32,1);
+  will-change: transform, backdrop-filter;
 }
 .holo-card:hover {
   background: rgba(15, 18, 28, 0.85);
@@ -222,11 +226,12 @@
   border-radius: 1.5rem;
   background: rgba(10, 16, 28, 0.96);
   border: 1px solid rgba(255,255,255,0.08);
-  backdrop-filter: blur(24px);
+  backdrop-filter: blur(12px);
   transition: transform 0.08s ease, box-shadow 0.3s ease;
   overflow: hidden;
   cursor: default;
   box-shadow: 0 40px 120px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.06);
+  will-change: transform;
 }
 .holographic-card::before {
   content:''; position:absolute; inset:0; border-radius:inherit;
