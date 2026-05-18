@@ -6,13 +6,7 @@ import { ParticleTextEffect } from './ui/particle-text';
 import { useTheme } from '../context/ThemeContext';
 
 // Portfolio site repo — show in nav/site only, not as a featured project card
-// Also exclude the GitHub Pages repo for the username (e.g. username.github.io)
-const EXCLUDED_GITHUB_REPOS = new Set([
-  'durgaprasad.me',
-  'durgaprasad-me',
-  'durgaprasad_me',
-  `${GITHUB_USERNAME}.github.io`,
-]);
+const EXCLUDED_GITHUB_REPOS = new Set(['durgaprasad.me', 'durgaprasad-me', 'durgaprasad_me']);
 
 /** Repo(s) for the Aura Fit app — pinned to the end of the project grid only. */
 const isAuraFitRepoName = (name) => {

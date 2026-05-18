@@ -1,0 +1,147 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import * as THREE from 'three'
+
+export function WebGLShader() {
+  const canvasRef = useRef(null)
+  const sceneRef = useRef({
+    scene: null,
+    camera: null,
+    renderer: null,
+    mesh: null,
+    uniforms: null,
+    animationId: null,
+    startTime: performance.now(),
+  })
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || ('ontouchstart' in window) || navigator.maxTouchPoints > 0)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
+    if (isMobile) return () => window.removeEventListener('resize', checkMobile)
+
+    if (!canvasRef.current) return
+
+    const canvas = canvasRef.current
+    const { current: refs } = sceneRef
+
+    const vertexShader = `
+      attribute vec3 position;
+      void main() {
+        gl_Position = vec4(position, 1.0);
+      }
+    `
+
+    const fragmentShader = `
+      precision highp float;
+      uniform vec2 resolution;
+      uniform float time;
+      uniform float xScale;
+      uniform float yScale;
+      uniform float distortion;
+
+      void main() {
+        vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
+        float d = length(p) * distortion;
+        float rx = p.x * (1.0 + d);
+        float gx = p.x;
+        float bx = p.x * (1.0 - d);
+
+        float r = 0.05 / abs(p.y + sin((rx + time) * xScale) * yScale);
+        float g = 0.05 / abs(p.y + sin((gx + time) * xScale) * yScale);
+        float b = 0.05 / abs(p.y + sin((bx + time) * xScale) * yScale);
+        
+        gl_FragColor = vec4(r, g, b, 1.0);
+      }
+    `
+
+    let isVisible = true
+
+    const initScene = () => {
+      refs.scene = new THREE.Scene()
+      refs.renderer = new THREE.WebGLRenderer({ 
+        canvas, 
+        antialias: false, 
+        powerPreference: 'high-performance',
+        alpha: false 
+      })
+      refs.renderer.setPixelRatio(1.0)
+      refs.renderer.setClearColor(0x000000, 1)
+
+      refs.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, -1)
+
+      refs.uniforms = {
+        resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+        time: { value: 0.0 },
+        xScale: { value: 1.0 },
+        yScale: { value: 0.5 },
+        distortion: { value: 0.05 },
+      }
+
+      const geometry = new THREE.PlaneGeometry(2, 2)
+      const material = new THREE.RawShaderMaterial({
+        vertexShader,
+        fragmentShader,
+        uniforms: refs.uniforms,
+      })
+
+      refs.mesh = new THREE.Mesh(geometry, material)
+      refs.scene.add(refs.mesh)
+      handleResize()
+    }
+
+    const animate = (now) => {
+      if (isVisible && refs.uniforms && refs.renderer) {
+        refs.uniforms.time.value = (now - refs.startTime) * 0.001
+        refs.renderer.render(refs.scene, refs.camera)
+      }
+      refs.animationId = requestAnimationFrame(animate)
+    }
+
+    const handleResize = () => {
+      if (!refs.renderer || !refs.uniforms) return
+      const width = window.innerWidth
+      const height = window.innerHeight
+      refs.renderer.setSize(width, height, false)
+      refs.uniforms.resolution.value.set(width, height)
+    }
+
+    const onVisibilityChange = () => {
+      isVisible = !document.hidden
+    }
+
+    initScene()
+    refs.animationId = requestAnimationFrame(animate)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    return () => {
+      if (refs.animationId) cancelAnimationFrame(refs.animationId)
+      window.removeEventListener('resize', checkMobile)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      if (refs.mesh) {
+        refs.mesh.geometry.dispose()
+        refs.mesh.material.dispose()
+      }
+      refs.renderer?.dispose()
+    }
+  }, [isMobile])
+
+  if (isMobile) {
+    return (
+      <div className="fixed inset-0 bg-[#020208] -z-10" />
+    )
+  }
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed top-0 left-0 w-full h-full block"
+      style={{ background: '#000' }}
+    />
+  )
+}
