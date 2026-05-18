@@ -59,7 +59,9 @@ const Projects = () => {
               !repo.fork &&
               !repo.name.toLowerCase().includes('code_alpha') &&
               !repo.name.toLowerCase().includes('codealpha') &&
-              !EXCLUDED_GITHUB_REPOS.has(repo.name.toLowerCase())
+              !EXCLUDED_GITHUB_REPOS.has(repo.name.toLowerCase()) &&
+              !String(repo.html_url || '').toLowerCase().includes(`${GITHUB_USERNAME}.github.io`) &&
+              !(repo.homepage && String(repo.homepage).toLowerCase().includes(`${GITHUB_USERNAME}.github.io`))
           )
           .map((repo) => {
             let liveLink = repo.homepage || repo.html_url;
