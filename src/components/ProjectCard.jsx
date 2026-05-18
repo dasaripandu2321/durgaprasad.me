@@ -1,8 +1,15 @@
 import React from 'react';
 import { Github, ExternalLink, Code2, Eye } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { GITHUB_USERNAME } from '../constants';
 
 const ProjectCard = ({ project }) => {
+  // Hide the GitHub Pages repo card if it slips through filtering
+  if (!project) return null;
+  const title = String(project.title || '').toLowerCase();
+  const src = String(project.github || project.link || '').toLowerCase();
+  if (title.includes(`${GITHUB_USERNAME}.github.io`) || src.includes(`${GITHUB_USERNAME}.github.io`)) return null;
+
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 
