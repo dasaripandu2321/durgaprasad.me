@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { GITHUB_USERNAME, PROJECT_DESCRIPTIONS } from '../constants';
 import ProjectCard from './ProjectCard';
-import { GlowCard } from './ui/spotlight-card';
 import { ParticleTextEffect } from './ui/particle-text';
 import { useTheme } from '../context/ThemeContext';
 
@@ -174,10 +173,9 @@ const Projects = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: (index % 6) * 0.1 }}
+                  className="h-full"
                 >
-                  <GlowCard glowColor="purple" className="h-full p-0">
-                    <ProjectCard project={project} />
-                  </GlowCard>
+                  <ProjectCard project={project} />
                 </motion.div>
               ))
             ) : (
